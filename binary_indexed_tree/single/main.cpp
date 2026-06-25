@@ -1,53 +1,56 @@
 #include <iostream>
-#include <array>
 #include <vector>
 
 using namespace std;
-constexpr int N = 1e2 + 1;
-int n, q;
+using ll = long long;
 
 struct BIT_SINGLE {
-    vector<int> sum{};
+    vector<ll> bit{};
+    int size;
 
-    BIT_SINGLE(int &n) {
-        sum.resize(n + 1);
+    BIT_SINGLE(int &n) : size(n + 1) {
+        bit.resize(size);
     }
 
-    void build(const std::vector<int> &a) {
-        for (int i = 0; i < a.size(); ++i) {
+    void build(const vector<ll> &a) {
+        for (int i = 0; i < a.size(); i++) {
             int j = i + 1;
-            sum[j] += a[i];
+            bit[j] += a[i];
             int parent = j + lowbit(j);
-            if (parent <= N) sum[j + lowbit(j)] += sum[j];
+            if (parent < size) bit[parent] += bit[j];
         }
     }
 
-    int lowbit(int x) {
-        return x & -x;
+    static int lowbit(int i) {
+        return i & -i;
     }
 
-    void add(int i, int x) {
-        for (; i <= n; i += lowbit(i)) sum[i] += x;
+    void update(int i, ll x) {
+        for (; i < size; i += lowbit(i)) bit[i] += x;
     }
 
-    int query(int i) {
-        int ret = 0;
-        for (; i; i -= lowbit(i)) ret += sum[i];
+    ll query(int i) const {
+        ll ret = 0;
+        for (; i; i -= lowbit(i)) ret += bit[i];
         return ret;
     }
 };
 
 int main() {
-    n = 10;
+    freopen("a.in", "r", stdin);
+    int n, q, l, r, type;;
+    cin >> n >> q;
     BIT_SINGLE bit(n);
-    vector<int> a(10);
-    for (int i = 0; i < 10; ++i) {
-        a[i] = i + 1;
-    }
+    vector<ll> a(n);
+    for (int i = 0; i < n; ++i) cin >> a[i];
     bit.build(a);
-    for (int i = 1; i <= n; ++i) {
-        cout << bit.query(i) << " ";
+    for (int i = 0; i < q; ++i) {
+        cin >> type >> l >> r;
+        if (type == 1) {
+            bit.update(l, r);
+        } else {
+            cout << bit.query(r) - bit.query(l - 1) << endl;
+        }
     }
-
     return 0;
 }

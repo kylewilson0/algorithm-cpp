@@ -1,75 +1,84 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
-#define MAX_NUM 100001
-#define LL long long
+using ll = long long;
 
-LL sum1[MAX_NUM] = {0}, sum2[MAX_NUM] = {0}, n;
+struct BIT_RANGE {
+    vector<ll> bit1{}, bit2{};
+    int size;
 
-LL lowbit(LL x) {
-    return x & -x;
-}
-
-// 单个修改
-void add(LL *sum, LL index, LL x) {
-    while (index <= n) {
-        sum[index] += x;
-        index += lowbit(index);
+    BIT_RANGE(int n) : size(n + 1) {
+        bit1.resize(size);
+        bit2.resize(size);
     }
-}
 
-// 单个查询
-LL query(const LL *sum, LL index) {
-    LL ret = 0;
-    while (index > 0) {
-        ret += sum[index];
-        index -= lowbit(index);
-    }
-    return ret;
-}
-
-// 区间修改
-void range_add(LL left, LL right, LL x) {
-    right++;
-    add(sum1, left, x);
-    add(sum1, right, -x);
-
-    add(sum2, left, x * left);
-    add(sum2, right, -x * right);
-}
-
-// 区间查询
-LL range_query(LL left, LL right) {
-    left--;
-    LL sumA = (left + 1) * query(sum1, left) - query(sum2, left);
-    LL sumB = (right + 1) * query(sum1, right) - query(sum2, right);
-
-    return sumB - sumA;
-}
-
-int main() {
-    freopen("a.in", "r", stdin);
-    LL i, q, current = 0, last = 0;
-
-    scanf("%lld%lld", &n, &q);
-    for (i = 1; i <= n; ++i) {
-        scanf("%lld", &current);
-        add(sum1, i, current - last);
-        add(sum2, i, (current - last) * i);
-        last = current;
-    }
-    char type[2];
-    LL left, right, x;
-    for (i = 1; i <= q; ++i) {
-        scanf("%s", &type);
-        if (type[0] == 'Q') {
-            scanf("%lld%lld", &left, &right);
-            printf("%lld\n", range_query(left, right));
-        } else {
-            scanf("%lld%lld%lld", &left, &right, &x);
-            range_add(left, right, x);
+    void build(const vector<ll> &a) {
+        for (int i = 0; i < a.size(); i++) {
+            int j = i + 1;
+            bit1[j] += a[i];
+            bit2[j] += a[i] * j;
+            int parent = j + lowbit(j);
+            if (parent < size) bit1[parent] += bit1[j], bit2[parent] += bit2[j];
         }
     }
 
+    static int lowbit(int i) {
+        return i & -i;
+    }
+
+    void update(vector<ll> &bit, int i, const ll x) const {
+        for (; i < size; i += lowbit(i)) bit[i] += x;
+    }
+
+    static ll query(const vector<ll> &bit, int i) {
+        ll ret = 0;
+        for (; i; i -= lowbit(i)) ret += bit[i];
+        return ret;
+    }
+
+    void updatePoint(const int i, const ll x) {
+        update(bit1, i, x);
+        update(bit2, i, x * i);
+    }
+
+    void updateRange(const int l, const int r, const ll x) {
+        update(bit1, l, x), update(bit1, r + 1, -x);
+        update(bit2, l, x * l), update(bit2, r + 1, -x * (r + 1));
+    }
+
+    ll queryPrefix(const int i) const {
+        return query(bit1, i) * (i + 1) - query(bit2, i);
+    }
+
+    ll queryRange(const int l, const int r) const {
+        return queryPrefix(r) - queryPrefix(l - 1);
+    }
+};
+
+int main() {
+    freopen("a.in", "r", stdin);
+    // freopen("a.out", "w", stdout);
+    int n, q, cur = 0, last = 0, l, r, x, type;
+    cin >> n >> q;
+    BIT_RANGE bit(n);
+    vector<ll> a(n);
+    for (int i = 1; i <= n; ++i) {
+        cin >> cur;
+        a[i - 1] = cur - last;
+        // bit.updatePoint(i, cur - last);
+        last = cur;
+    }
+    bit.build(a);
+    for (int i = 1; i <= q; ++i) {
+        cin >> type;
+        if (type == 2) {
+            cin >> l >> r;
+            cout << bit.queryRange(l, r) << '\n';
+        } else {
+            cin >> l >> r >> x;
+            bit.updateRange(l, r, x);
+        }
+    }
     return 0;
 }
