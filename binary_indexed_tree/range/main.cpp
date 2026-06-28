@@ -8,7 +8,7 @@ struct BIT_RANGE {
     vector<ll> bit1{}, bit2{};
     int size;
 
-    BIT_RANGE(int n) : size(n + 1) {
+    BIT_RANGE(const int n) : size(n + 1) {
         bit1.resize(size);
         bit2.resize(size);
     }
@@ -23,7 +23,7 @@ struct BIT_RANGE {
         }
     }
 
-    static int lowbit(int i) {
+    static int lowbit(const int i) {
         return i & -i;
     }
 
