@@ -30,6 +30,10 @@ struct DSU {
         parent[y] = x;
         size[x] += size[y];
     }
+
+    bool isConnected(const int x, const int y) {
+        return find(x) == find(y);
+    }
 };
 
 void solve() {
