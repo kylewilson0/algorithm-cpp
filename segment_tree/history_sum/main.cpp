@@ -92,7 +92,7 @@ struct SegmentTree {
     }
 };
 
-// TODO
+// TODO matrix & segment tree
 void solve() {
     int n, m, type, l, r, x;
     cin >> n >> m;
