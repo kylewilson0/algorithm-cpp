@@ -62,7 +62,7 @@ int get_id(int x, int len) {
     return lower_bound(b.begin(), b.begin() + len, x) - b.begin() + 1;
 }
 
-int scatter(int n) {
+int init(int n) {
     for (int i = 0; i < n; ++i) {
         cin >> a[i], b[i] = a[i];
     }
@@ -71,11 +71,11 @@ int scatter(int n) {
     return len;
 }
 
-// persistent segment tree
+// persistent segment tree luogu3834
 void solve() {
     int n, m, l, r, x;
     cin >> n >> m;
-    int len = scatter(n);
+    int len = init(n);
     SegmentTree seg(len, n);
     root[0] = seg.root;
     for (int i = 1; i <= n; ++i) {
