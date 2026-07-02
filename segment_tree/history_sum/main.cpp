@@ -1,120 +1,156 @@
 #include <iostream>
-#include <algorithm>
 #include <array>
 #include <vector>
-#include <map>
-#include <set>
-#include <cmath>
-#include <numeric>
-#include <iomanip>
 
-#define fixed(x) fixed<<setprecision(x)
 #define LOCAL
 
 using namespace std;
 using ll = long long;
-using pll = pair<ll, ll>;
-using pii = pair<int, int>;
-
-constexpr int INF = 0x3f3f3f3f;
-constexpr ll LNF = 0x3f3f3f3f3f3f3f3f;
-constexpr int MOD = 1e9 + 7;
-constexpr double EPS = 1e-8;
 constexpr int N = 1e5 + 1;
 
-struct Node {
-    int d, l, r;
+struct Matrix {
+    static constexpr int sz = 3;
+    array<array<ll, sz>, sz> a{};
+
+    Matrix() {
+        for (int i = 0; i < sz; ++i) a[i][i] = 1;
+    }
+
+    Matrix operator*(const Matrix &T) const {
+        Matrix res;
+        // for (int i = 0; i < sz; ++i)
+        //     for (int j = 0; j < sz; ++j) {
+        //         // if (i > j) continue;
+        //         ll tot = 0;
+        //         for (int k = 0; k < sz; ++k) tot += a[i][k] * T.a[k][j];
+        //         res.a[i][j] = tot;
+        //     }
+        res.a[0][1] = T.a[0][1] + a[0][1];
+        res.a[0][2] = T.a[0][2] + T.a[1][2] * a[0][1] + a[0][2];
+        res.a[1][2] = T.a[1][2] + a[1][2];
+        return res;
+    }
 };
 
-struct SegmentTree {
-    vector<Node> tree{};
-    vector<int> lazy{};
-    vector<int> *a;
-    int idx = 0, sz = 0, root = 0;
+inline void calc(Matrix &ma, Matrix &mb, Matrix &ans) {
+    Matrix res;
+    for (int i = 0; i < 2; ++i) {
+        ll tt = 0;
+        for (int j = 0; j < 3; ++j) {
+            tt += ma.a[i][j] * mb.a[j][0];
+        }
+        res.a[i][0] = tt;
+    }
+    ans.a[0][0] = res.a[0][0], ans.a[1][0] = res.a[1][0];
+}
 
-    SegmentTree(int n, vector<int> &v) : sz(n) {
-        tree.resize(2 * sz);
-        lazy.resize(2 * sz);
+struct SegmentTree {
+    struct Node {
+        int l, r;
+        bool lazy;
+    };
+
+    vector<Node> tree{};
+    vector<Matrix> delta{}, data{};
+    vector<ll> *a;
+    int idx = 0, root = 0;
+
+    SegmentTree(int n, vector<ll> &v) {
+        tree.resize(N << 2);
+        delta.resize(N << 2);
+        data.resize(N << 2);
         a = &v;
         build(root, 1, n);
-        cout << "root=" << root << endl;
-        // for (int i = 1; i < 2 * sz; ++i) {
-        //     printf("%d %d %d\n", tree[i].l, tree[i].r, tree[i].d);
-        // }
-        // cout << endl;
     }
 
     void build(int &p, int s, int t) {
         if (!p) p = ++idx;
         if (s == t) {
-            // cout << "s=" << s << ", a[s]=" << (*a)[s] << endl;
-            tree[p].d = (*a)[s];
+            Matrix m1;
+            delta[p] = m1;
+            m1.a[0][0] = m1.a[1][0] = (*a)[s];
+            m1.a[2][0] = 1;
+            data[p] = m1;
             return;
         }
-        const int m = s + (t - s) / 2;
+        const int m = s + ((t - s) >> 1);
         build(tree[p].l, s, m);
         build(tree[p].r, m + 1, t);
-        tree[p].d = tree[tree[p].l].d + tree[tree[p].r].d;
+        pushup(p, 3);
+        delta[p] = Matrix();
     }
 
-    void maintain(int p) {
-        if (lazy[p] <= 0) return;
+    void pushup(int p, int len) {
+        for (int i = 0; i < len; ++i) {
+            data[p].a[i][0] = data[tree[p].l].a[i][0] + data[tree[p].r].a[i][0];
+        }
+    }
+
+    void pushdown(int p) {
+        if (!tree[p].lazy) return;
         const int ls = tree[p].l, rs = tree[p].r;
         if (ls == 0) return;
-        tree[ls].d += lazy[p] * (tree[ls].r - tree[ls].l + 1);
-        tree[rs].d += lazy[p] * (tree[rs].r - tree[rs].l + 1);
-        lazy[ls] += lazy[p];
-        lazy[rs] += lazy[p];
-        lazy[p] = 0;
+        tree[ls].lazy = tree[rs].lazy = true;
+        delta[ls] = delta[p] * delta[ls];
+        delta[rs] = delta[p] * delta[rs];
+        // data[ls] = delta[p] * data[ls];
+        // data[rs] = delta[p] * data[rs];
+        calc(delta[p], data[ls], data[ls]);
+        calc(delta[p], data[rs], data[rs]);
+        delta[p] = Matrix();
+        tree[p].lazy = false;
     }
 
-    void update(int p, int s, int t, int x, int l, int r) {
+    void update(int p, int s, int t, Matrix x, int l, int r) {
         if (l <= s && t <= r) {
-            lazy[p] += x;
-            tree[p].d += x;
+            delta[p] = x * delta[p];
+            // data[p] = x * data[p];
+            calc(x, data[p], data[p]);
+            tree[p].lazy = true;
             return;
         }
-        maintain(p);
-        const int m = s + (t - s) / 2, ls = tree[p].l, rs = tree[p].r;
+        pushdown(p);
+        const int m = s + ((t - s) >> 1), ls = tree[p].l, rs = tree[p].r;
         if (l <= m) update(ls, s, m, x, l, r);
         if (r > m) update(rs, m + 1, t, x, l, r);
-        tree[p].d = tree[ls].d + tree[rs].d;
+        pushup(p, 2);
     }
 
-    int query(int p, int s, int t, int l, int r) {
-        if (l <= s && t <= r) return tree[p].d;
-        const int m = s + (t - s) / 2, ls = tree[p].l, rs = tree[p].r;
-        int ret = 0;
-        maintain(p);
-        if (l <= m) ret += query(ls, s, m, l, r);
-        if (r > m) ret += query(rs, m + 1, t, l, r);
+    ll query(int p, int s, int t, int l, int r) {
+        if (l <= s && t <= r) return data[p].a[0][0];
+        const int m = s + ((t - s) >> 1), ls = tree[p].l, rs = tree[p].r;
+        pushdown(p);
+        ll ret = 0;
+        if (l <= m) ret = ret + query(ls, s, m, l, r);
+        if (r > m) ret = ret + query(rs, m + 1, t, l, r);
         return ret;
     }
 };
 
-// TODO matrix & segment tree
+// segment tree history sum loj 193
 void solve() {
     int n, m, type, l, r, x;
     cin >> n >> m;
-    vector<int> v(n + 1), sum(n + 1);
+    vector<ll> v(n + 1);
     for (int i = 1; i <= n; ++i) cin >> v[i];
-    for (int i = 1; i <= n; ++i) {
-        cout << v[i] << " ";
-        sum[i] = sum[i - 1] + v[i];
-    }
-    cout << endl;
     SegmentTree seg(n, v);
-    // for (int i = 1; i <= m; ++i) {
-    //     cin >> type >> l >> r;
-    //     if (type == 1) {
-    //         cin >> x;
-    //         seg.update(seg.root, 1, n, x, l, r);
-    //     } else {
-    //         int ans = (sum[r] - sum[l - 1]) * (i - 1);
-    //         ans += seg.query(seg.root, 1, n, l, r);
-    //         cout << ans << endl;
-    //     }
-    // }
+    for (int i = 1; i <= m; ++i) {
+        cin >> type >> l >> r;
+        if (type == 1) {
+            cin >> x;
+            Matrix mt;
+            mt.a[0][1] = 0, mt.a[1][2] = x;
+            seg.update(seg.root, 1, n, mt, l, r);
+            mt.a[0][1] = 1, mt.a[1][2] = 0;
+            seg.update(seg.root, 1, n, mt, 1, n);
+        } else {
+            ll ans = seg.query(seg.root, 1, n, l, r);
+            cout << ans << '\n';
+            Matrix mt;
+            mt.a[0][1] = 1, mt.a[1][2] = 0;
+            seg.update(seg.root, 1, n, mt, 1, n);
+        }
+    }
 }
 
 int main() {
@@ -122,10 +158,6 @@ int main() {
     freopen("a.in", "r", stdin);
 #endif
     ios::sync_with_stdio(false), cin.tie(nullptr), cout.tie(nullptr);
-    int t = 1;
-    //cin >> t;
-    while (t--) {
-        solve();
-    }
+    solve();
     return 0;
 }
