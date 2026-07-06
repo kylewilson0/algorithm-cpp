@@ -4,8 +4,8 @@
 #define LOCAL
 using namespace std;
 constexpr int INF = 0x3f3f3f3f;
-constexpr int N = 2e3 + 1;
-constexpr int M = 6e3 + 1;
+constexpr int N = 5e3 + 10;
+constexpr int M = 1e4 + 10;
 
 struct Edge {
     int to, nxt, w;
@@ -35,7 +35,7 @@ bool spfa(int s) {
             if (dis[v] > dis[u] + w) {
                 dis[v] = dis[u] + w;
                 cnt[v] = cnt[u] + 1;
-                if (cnt[v] >= n) return true;
+                if (cnt[v] >= n + 1) return true;
                 if (!vis[v]) {
                     q.push(v);
                     vis[v] = 1;
@@ -52,14 +52,14 @@ void solve() {
     cin >> n >> m;
     for (int i = 0; i < m; i++) {
         cin >> u >> v >> w;
-        if (w >= 0) {
-            addEdge(u, v, w);
-            addEdge(v, u, w);
-        } else {
-            addEdge(u, v, w);
-        }
+        addEdge(v, u, w);
     }
-    cout << (spfa(1) ? "YES" : "NO") << '\n';
+    for (int i = 1; i <= n; i++) addEdge(0, i, 0);
+    if (spfa(0)) {
+        cout << "NO";
+        return;
+    }
+    for (int i = 1; i <= n; i++) cout << dis[i] << " ";
 }
 
 int main() {
@@ -67,10 +67,6 @@ int main() {
     freopen("a.in", "r", stdin);
 #endif
     ios::sync_with_stdio(false), cin.tie(nullptr), cout.tie(nullptr);
-    int t = 1;
-    cin >> t;
-    while (t--) {
-        solve();
-    }
+    solve();
     return 0;
 }
