@@ -5,7 +5,7 @@
 #define fixed(x) fixed<<setprecision(x)
 #define LOCAL
 using namespace std;
-constexpr double EPS = 1e-9;
+constexpr double EPS = 1e-8;
 constexpr int N = 1e2 + 10;
 double ma[N][N]{};
 int n;
