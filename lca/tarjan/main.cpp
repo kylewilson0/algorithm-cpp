@@ -13,7 +13,7 @@ struct Edge {
 
 Edge edge[N << 1], queryEdge[N << 1];
 int n, m, s, cnt = 0, queryCnt = 0, head[N], queryHead[N], parent[N];
-bool vis[N];
+bool vis[N]{};
 
 void addEdge(int u, int v) {
     edge[cnt].to = v;
@@ -58,16 +58,13 @@ void solve() {
     int a, b;
     memset(head, 0xff, sizeof(head));
     memset(queryHead, 0xff, sizeof(queryHead));
-    memset(vis, false, sizeof(vis));
     for (int i = 0; i < n - 1; i++) {
         cin >> a >> b;
-        addEdge(a, b);
-        addEdge(b, a);
+        addEdge(a, b), addEdge(b, a);
     }
     for (int i = 0; i < m; i++) {
         cin >> a >> b;
-        addQueryEdge(a, b);
-        addQueryEdge(b, a);
+        addQueryEdge(a, b), addQueryEdge(b, a);
     }
     tarjan(s);
     for (int i = 0; i < m; i++) cout << queryEdge[i << 1].lca << '\n';
