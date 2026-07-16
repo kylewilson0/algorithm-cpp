@@ -87,9 +87,21 @@ struct SegmentTree {
     }
 
     int findRoot(int pre, int pos) {
-        int f = query(pre, 1, len, pos);
-        if (pos == f) return f;
-        return findRoot(pre, f);;
+        int fa = query(pre, 1, len, pos);
+        if (pos == fa) return fa;
+        return findRoot(pre, fa);
+    }
+
+    int unite(int p, int a, int b) {
+        int fa = findRoot(p, a), fb = findRoot(p, b);
+        if (fa == fb) return p;
+        int rnk_a = queryRnk(p, 1, len, fa), rnk_b = queryRnk(p, 1, len, fb);
+        if (rnk_a > rnk_b) {
+            swap(fa, fb);
+            swap(rnk_a, rnk_b);
+        }
+        int lastRoot = update(p, 1, len, fa, fb);
+        return updateRnk(lastRoot, 1, len, fb, rnk_a + 1);
     }
 };
 
@@ -105,16 +117,7 @@ void solve() {
         cin >> op;
         if (op == 1) {
             cin >> a >> b;
-            root[i] = root[i - 1];
-            int fa = seg.findRoot(root[i], a), fb = seg.findRoot(root[i], b);
-            if (fa == fb) continue;
-            int rnk_a = seg.queryRnk(root[i], 1, n, fa), rnk_b = seg.queryRnk(root[i], 1, n, fb);
-            if (rnk_a > rnk_b) {
-                swap(fa, fb);
-                swap(rnk_a, rnk_b);
-            }
-            int lastRoot = seg.update(root[i], 1, n, fa, fb);
-            root[i] = seg.updateRnk(lastRoot, 1, n, fb, rnk_a + 1);
+            root[i] = seg.unite(root[i - 1], a, b);
         } else if (op == 2) {
             cin >> v;
             root[i] = root[v];
