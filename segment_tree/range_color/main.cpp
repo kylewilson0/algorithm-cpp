@@ -1,17 +1,15 @@
 #include <iostream>
 #include <vector>
-
 #define LOCAL
-
 using namespace std;
 using ll = long long;
 
-struct SegmentTree {
-    struct Node {
-        int l, r, color;
-        ll d, delta;
-    };
+struct Node {
+    int l, r, color;
+    ll d, delta;
+};
 
+struct SegmentTree {
     vector<Node> tree{};
     int idx = 0, sz = 0, root = 0;
 

@@ -2,19 +2,17 @@
 #include <vector>
 #include <array>
 #include <algorithm>
-
 #define LOCAL
-
 using namespace std;
 using ll = long long;
 using pii = pair<int, int>;
 constexpr int N = 2e5 + 1;
 
-struct SegmentTree {
-    struct Node {
-        int l, r, d;
-    };
+struct Node {
+    int l, r, d;
+};
 
+struct SegmentTree {
     vector<Node> tree{};
     int idx = 0, root = 0;
 

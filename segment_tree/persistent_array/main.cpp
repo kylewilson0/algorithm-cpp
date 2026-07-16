@@ -8,14 +8,14 @@
 using namespace std;
 constexpr int N = 1e6 + 1;
 
+struct Node {
+    int l, r, d;
+
+    Node() : l(0), r(0), d(0) {
+    }
+};
+
 struct SegmentTree {
-    struct Node {
-        int l, r, d;
-
-        Node() : l(0), r(0), d(0) {
-        }
-    };
-
     vector<Node> tree{};
     int idx = 0, root = 0;
 

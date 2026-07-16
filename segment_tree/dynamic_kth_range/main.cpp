@@ -27,11 +27,11 @@ int get_id(int x) {
     return lower_bound(b.begin(), b.begin() + len, x) - b.begin() + 1;
 }
 
-struct SegmentTree {
-    struct Node {
-        int l, r, d;
-    };
+struct Node {
+    int l, r, d;
+};
 
+struct SegmentTree {
     vector<Node> tree{};
     int idx = 0;
 
