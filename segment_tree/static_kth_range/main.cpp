@@ -32,15 +32,15 @@ struct SegmentTree {
         return cur;
     }
 
-    int update(int last, int s, int t, int id) {
+    int update(int pre, int s, int t, int id) {
         int cur = ++idx;
-        tree[cur] = {tree[last].l, tree[last].r, tree[last].d + 1};
+        tree[cur] = {tree[pre].l, tree[pre].r, tree[pre].d + 1};
         if (s == t) return cur;
         int m = s + ((t - s) >> 1);
         if (id <= m) {
-            tree[cur].l = update(tree[last].l, s, m, id);
+            tree[cur].l = update(tree[pre].l, s, m, id);
         } else {
-            tree[cur].r = update(tree[last].r, m + 1, t, id);
+            tree[cur].r = update(tree[pre].r, m + 1, t, id);
         }
         return cur;
     }
