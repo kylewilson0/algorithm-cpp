@@ -9,26 +9,23 @@ class LRUCache {
     list<pii> cache;
     unordered_map<int, list<pii>::iterator> keyTable;
 
-    void moveToHead(int key, int value) {
-        cache.erase(keyTable[key]);
-        cache.emplace_front(key, value);
-        keyTable[key] = cache.begin();
-    }
-
 public:
     LRUCache(int cap) : capacity(cap) {
     }
 
     int get(int key) {
         if (!keyTable.contains(key)) return -1;
-        int value = keyTable[key]->second;
-        moveToHead(key, value);
+        auto node = keyTable[key];
+        int value = node->second;
+        cache.splice(cache.begin(), cache, node);
         return value;
     }
 
     void put(int key, int value) {
         if (keyTable.contains(key)) {
-            moveToHead(key, value);
+            auto node = keyTable[key];
+            node->second = value;
+            cache.splice(cache.begin(), cache, node);
             return;
         }
         if (cache.size() >= capacity) {
