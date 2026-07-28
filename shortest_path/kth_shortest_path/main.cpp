@@ -8,8 +8,7 @@
 using namespace std;
 using pdi = pair<double, int>;
 constexpr double LNF = 1e13;
-constexpr int N = 5e3 + 1;
-constexpr int M = 2e5 + 1;
+constexpr int N(5e3 + 1), M(2e5 + 1);
 
 struct Edge {
     int u, v;
